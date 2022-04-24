@@ -1,0 +1,97 @@
+name: CICD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout
+        
+#       - name: Set env
+#         run: echo "DATE=$(date +%y-%m-%d-%H)" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          cluster-name: ${{ secrets.AWS_CLUSTER }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+# 각자 ECR의 repo 넣기
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: 940168446867.dkr.ecr.eu-central-1.amazonaws.com
+          ECR_REPOSITORY: project
+          IMAGE_TAG: latest
+        run: |
+          docker build -t 940168446867.dkr.ecr.eu-central-1.amazonaws.com/project:django_lastest
+          docker push 940168446867.dkr.ecr.ca-central-1.amazonaws.com/project:django_lastest
+#       - name: install jdk
+#         uses: actions/setup-java@v3
+#         with:
+#           distribution: 'temurin'
+#           java-version: '11'
+#           cache: 'gradle'
+          
+#       - name: chmod gradle
+#         run: chmod +x ./gradlew
+        
+#       - name: build
+#         run: ./gradlew build --no-daemon
+        
+#       - name: check build
+#         run: ls ./build/libs
+        
+#       - name: Set up Docker Buildx
+#         id: buildx
+#         uses: docker/setup-buildx-action@v1
+
+#       - name: docker build
+#         run: |
+#           cp ./build/libs/*.war ./Dockerfile
+#           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/m-dev:tomcat_lastest ./Dockerfile
+# #          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/m-dev:tomcat_$GITHUB_RUN_NUMBER ./Dockerfile
+# #          docker images
+          
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v1
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+
+#       - name: docker push
+#         run: |
+#           docker push ${{ secrets.DOCKERHUB_USERNAME }}/m-dev:tomcat_lastest
+# #          docker push ${{ secrets.DOCKERHUB_USERNAME }}/m-dev:tomcat_$GITHUB_RUN_NUMBER
+
+#       - name: was-deploy restart
+#         uses: Consensys/kubernetes-action@master
+#         env:
+#           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+#         with:
+#           args: rollout restart deployment/was
+        
+#       - name: change war.file name
+#         run: mv ./build/libs/*.war ./build/libs/${{ env.DATE }}.war
+        
+# #       - name: filename change
+# #         run: mv ./build/libs/*.war ./build/libs/${{ env.DATE }}.war
+
+#       - name: Copy a folder to s3
+#         uses: prewk/s3-cp-action@v2
+#         with:
+#           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           source: ./build/libs
+#           dest: s3://${{ secrets.AWS_S3_BUCKET }}
+#           flags: --recursive
